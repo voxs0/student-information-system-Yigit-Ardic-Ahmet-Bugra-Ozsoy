@@ -1,0 +1,15 @@
+sequenceDiagram
+    title OBS Sistemi - Duyuru ve Görev Yönetimi
+
+    actor Akademisyen as Academician
+    participant UI as UI: Dashboard
+    participant TS as TaskService
+    participant DB as Database
+    participant Log as LogService
+
+    Note over Academician,Log: Duyuru Yayınlama
+    Academician->>UI: "Duyuru Oluştur" (Ders: Yazılım, Başlık: Sınav Hk.)
+    UI->>TS: Duyuru İçeriğini Doğrula
+    TS->>DB: Duyuruyu Kaydet
+    TS->>Log: Log: Yeni Duyuru Yayınlandı (CourseID)
+    TS-->>UI: "Duyuru tüm öğrencilere iletildi."

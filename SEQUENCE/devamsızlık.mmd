@@ -1,0 +1,43 @@
+sequenceDiagram
+    title OBS Sistemi - Devamsızlık Yönetimi (Attendance)
+
+    actor Academician as Akademisyen
+    actor Admin as Admin
+    participant UI as UI: Dashboard
+    participant AM as AttendanceManager
+    participant DB as Database
+    participant Log as LogService
+
+    
+    Academician->>UI: Ders Seç ve Yoklama Listesini Aç
+    UI->>AM: Öğrenci Listesini Getir(CourseID, Date)
+    AM->>DB: Kayıtlı Öğrencileri Sorgula
+    DB-->>AM: Öğrenci Listesi
+    AM-->>UI: Listeyi Görüntüle
+
+    Academician->>UI: Devamsızlıkları İşle (Gelen/Gelmeyen)
+    UI->>AM: Devamsızlık Verisini Gönder
+    activate AM
+
+    AM->>AM: Tarih ve Yetki Kontrolü Yap()
+    AM->>DB: Devamsızlık Tablosunu Güncelle
+    DB-->>AM: Kayıt Başarılı
+
+    AM->>Log: Log: Devamsızlık Girildi (CourseID, Date)
+    Log->>DB: Log Yazıldı
+    deactivate AM
+
+    AM-->>UI: "Yoklama başarıyla kaydedildi."
+
+    Note over Admin,Log: Admin: Devamsızlık Düzenleme (Sena
+
+    Admin->>UI: Devamsızlık Düzenleme Panelini Aç
+    UI->>AM: Belirli Kaydı Getir(StudentID, Date)
+    AM->>DB: Kaydı Sorgula
+    DB-->>AM: Mevcut Durum (Örn: Devamsız)
+
+    Admin->>UI: Durumu Güncelle (Örn: İzinli/Mazeretli)
+    UI->>AM: Güncelleme İsteği
+    AM->>DB: Kaydı Update Et
+    AM->>Log: Log: Admin Tarafından Düzeltme Yapıldı
+    AM-->>UI: "Kayıt güncellendi."

@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor Student as Öğrenci
+    participant UI as UI: Dashboard
+    participant CLM as ClubManager
+    participant DB as Database
+    participant Log as LogService
+
+
+    Student->>UI: "Profilim / Kulüplerim" Sayfasını Aç
+    UI->>CLM: Üyelik Bilgilerini Getir (Student_ID)
+    CLM->>DB: Kulüp Üyelerini Sorgula
+    DB-->>CLM: [Robotik Kulübü, Satranç Kulübü]
+    CLM-->>UI: Kulüp Bilgilerini Görüntüle
+
+
+    Student->>UI: "Kulübe Katıl" (Müzik Kulübü)
+    UI->>CLM: Kayıt Talebi Gönder
+    CLM->>DB: Üyeliği Kaydet
+    DB-->>CLM: Başarılı
+    CLM->>Log: Log: Yeni Kulüp Üyeliği (Student_ID, Club_ID)
+    CLM-->>UI: "Kulüp üyeliğiniz onaylandı!"

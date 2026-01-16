@@ -1,0 +1,41 @@
+sequenceDiagram
+    actor Student as Öğrenci
+    participant UI as UI: Dashboard
+    participant Auth as AuthService
+    participant CM as CourseManager
+    participant DB as Database
+    participant Log as LogService
+
+
+    Student->>UI: Giriş Yap (Credentials)
+    UI->>Auth: Bilgileri Doğrula
+    Auth->>DB: Kullanıcıyı Sorgula
+    DB-->>Auth: Kullanıcı Rolü: Student
+    Auth-->>UI: Giriş Başarılı (Dashboard'u Göster)
+
+
+    Student->>UI: Ders Kayıt Ekranını Aç
+    UI->>CM: Uygun Dersleri Getir(StudentID)
+    CM->>DB: Kontenjan Kontrolü
+    DB-->>CM: Ders Listesi
+    CM-->>UI: Dersleri Listele
+
+
+    Student->>UI: Dersleri Seç ve Kaydet
+    UI->>CM: Kayıt İsteği Gönder (DersListesi)
+    activate CM
+    CM->>CM: Ön Koşul ve Çakışma Kontrolü()
+
+    alt Kontroller Başarılı
+        CM->>DB: Ders Kaydını 'Taslak' Olarak Kaydet
+        DB-->>CM: Onay
+        
+
+        CM->>Log: İşlemi Günlüğe Kaydet (Action: CourseRegistration)
+        Log->>DB: Log Kaydı Yaz
+        
+        CM-->>UI: "Ders kaydı başarıyla alındı, danışman onayı bekleniyor."
+    else Kontroller Başarısız (Örn: Kontenjan Dolu)
+        CM-->>UI: Hata Mesajı Göster
+    end
+    deactivate CM

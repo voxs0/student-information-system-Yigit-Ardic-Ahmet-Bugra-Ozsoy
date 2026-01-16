@@ -1,0 +1,31 @@
+sequenceDiagram
+    title OBS Sistemi - Ders ve Program Oluşturma (Admin)
+
+    actor Admin as Sistem Admini
+    participant UI as Admin Paneli
+    participant CM as CourseManager
+    participant SE as ScheduleEngine
+    participant DB as Database
+    participant Log as LogService
+
+    Admin->>UI: "Yeni Ders Ekle" (Ders Adı, Kredi, Bölüm)
+    UI->>CM: Ders Verilerini Doğrula
+    CM->>DB: Dersi Kaydet
+    DB-->>CM: Onay (Course_ID: 501)
+    CM-->>UI: "Ders başarıyla oluşturuldu."
+
+    Admin->>UI: "Ders Programı Hazırla" (Course_ID, Hoca, Saat, Derslik)
+    UI->>SE: Çakışma Kontrolü Yap (Hoca & Derslik)
+    activate SE
+    SE->>DB: Hoca ve Derslik Müsaitlik Sorgusu
+    DB-->>SE: Müsaitlik Durumu
+    SE->>SE: Zaman Çakışmalarını Kontrol Et
+
+    alt Çakışma Yok
+        SE->>DB: Programı Kaydet
+        SE->>Log: Log: Haftalık Program Güncellendi
+        SE-->>UI: "Program başarıyla yayınlandı."
+    else Çakışma Var
+        SE-->>UI: "Hata: Derslik veya Hoca bu saatte dolu!"
+    end
+    deactivate SE

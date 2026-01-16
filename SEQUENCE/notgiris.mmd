@@ -1,0 +1,36 @@
+sequenceDiagram
+    title OBS Sistemi - Not Girişi Sequence Diagram
+
+    actor Academician as Akademisyen
+    participant UI as UI: Dashboard
+    participant GM as GradeManager
+    participant DB as Database
+    participant Log as LogService
+
+
+    Academician->>UI: Not Giriş Sayfasını Aç
+    UI->>GM: Akademisyenin Derslerini Getir(AcademicianID)
+    GM->>DB: Ders Listesi Sorgula
+    DB-->>GM: Dersler (Örn: Yazılım Mimarisi)
+    GM-->>UI: Dersleri Listele
+
+
+    Academician->>UI: Öğrenci Notlarını Gir (Vize, Final, Ödev)
+    UI->>GM: Notları Kaydet(StudentList, Grades)
+
+    activate GM
+
+    GM->>GM: Not Aralıklarını Kontrol Et (0-100)
+    GM->>GM: Hesaplama Yap (0.4*Vize + 0.6*Final)
+
+
+    GM->>DB: Notları Güncelle (Student_Grades Table)
+    DB-->>GM: Başarılı
+
+
+    GM->>Log: İşlemi Logla (Action: Grade_Entry, User: AcademicianID)
+    Log->>DB: Log Kaydını Yaz
+    deactivate GM
+
+    GM-->>UI: "Notlar başarıyla kaydedildi ve hesaplandı."
+    UI-->>Academician: Onay Mesajını Göster
