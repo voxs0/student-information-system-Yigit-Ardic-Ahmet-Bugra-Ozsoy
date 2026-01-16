@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kampüs OBS - Multi-Role Master Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <style>
+        .hidden { display: none; }
+        .active-link { background-color: #2563eb; font-weight: bold; border-right: 4px solid white; }
+        .active-link-teacher { background-color: #7c3aed; font-weight: bold; border-right: 4px solid white; }
+        .modal-bg { background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
+        body { transition: background-color 0.3s; }
+        .info-card { @apply bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm transition-all; }
+        .announcement-card { @apply p-5 rounded-2xl border-l-4 shadow-sm transition hover:shadow-md bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 mb-4; }
+        .profile-img { width: 120px; height: 120px; object-fit: cover; border-radius: 2rem; border: 4px solid #f1f5f9; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 min-h-screen">
+
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 text-center">
+            <div id="login-header" class="bg-blue-600 p-10 text-white transition-colors duration-500">
+                <div class="text-5xl mb-4">🏛️</div>
+                <h1 class="text-3xl font-black uppercase tracking-wider">Kampüs OBS</h1>
+                <p class="mt-2 text-blue-100 text-xs uppercase tracking-widest">Akademik Giriş Kapısı</p>
+            </div>
+            <form id="login-form" class="p-8 space-y-6">
+                <input type="text" id="username" class="w-full px-4 py-3 rounded-xl border dark:border-slate-700 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Kullanıcı (admin veya hoca)" required>
+                <input type="password" id="password" class="w-full px-4 py-3 rounded-xl border dark:border-slate-700 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Şifre" required>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">Sisteme Giriş Yap</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="info-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 modal-bg">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-8 shadow-2xl border dark:border-slate-800">
+            <div class="flex justify-between items-start mb-6 text-blue-600">
+                <h3 id="m-title" class="text-2xl font-black tracking-tighter">---</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-red-500 text-3xl">&times;</button>
+            </div>
+            <div class="space-y-4 text-sm">
+                <div class="border-b dark:border-slate-800 pb-2"><p class="text-slate-400 text-[10px] font-bold uppercase">Öğretim Elemanı</p><p id="m-teacher" class="font-semibold">---</p></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="border-b dark:border-slate-800 pb-2"><p class="text-slate-400 text-[10px] font-bold uppercase">AKTS</p><p id="m-akts" class="font-bold text-blue-500">---</p></div>
+                    <div class="border-b dark:border-slate-800 pb-2"><p class="text-slate-400 text-[10px] font-bold uppercase">Derslik</p><p id="m-room" class="font-semibold">---</p></div>
+                </div>
+            </div>
+            <button onclick="closeModal()" class="w-full mt-8 bg-blue-600 text-white py-3 rounded-xl font-bold">Kapat</button>
+        </div>
+    </div>
+
+    <div id="main-dashboard" class="hidden min-h-screen flex flex-col md:flex-row">
+        
+        <aside id="sidebar" class="w-full md:w-64 bg-slate-900 text-white p-6 shadow-2xl shrink-0">
+            <div class="mb-10 flex items-center gap-2">
+                <div id="side-role-icon" class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-xs">🎓</div>
+                <h2 class="text-xl font-black italic tracking-tighter uppercase">KAMPÜS OBS</h2>
+            </div>
+            
+            <nav id="nav-menu" class="space-y-1">
+                </nav>
+
+            <button onclick="location.reload()" class="w-full text-left p-4 text-red-400 hover:bg-red-900/20 rounded-xl mt-10 flex items-center gap-3 transition"><span>🚪</span> Çıkış Yap</button>
+        </aside>
+
+        <main class="flex-1 p-6 md:p-12 overflow-y-auto">
+            
+            <div id="student-pages" class="hidden">
+                <div id="page-studentInfo" class="page hidden animate-in fade-in">
+                    <h2 class="text-3xl font-black mb-8 border-l-4 border-indigo-600 pl-4 uppercase">Öğrenci Genel Bilgileri</h2>
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                        <div class="xl:col-span-1 info-card text-center flex flex-col items-center">
+                            <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&auto=format&fit=crop" class="profile-img mb-6 shadow-xl" alt="Profil">
+                            <h3 class="text-xl font-black uppercase">Yiğit Ardıç</h3>
+                            <p class="text-slate-400 text-[10px] font-bold">220202002</p>
+                        </div>
+                        <div class="xl:col-span-2 info-card grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div><p class="text-slate-400 text-[10px] font-bold uppercase">Bölüm</p><p class="font-bold">Yönetim Bilişim Sistemleri</p></div>
+                            <div><p class="text-slate-400 text-[10px] font-bold uppercase">Danışman</p><p class="font-bold italic">Dr. Öğr. Üyesi Elife Özer</p></div>
+                            <div><p class="text-slate-400 text-[10px] font-bold uppercase">GNO</p><p class="font-bold text-indigo-600 text-3xl">3.09</p></div>
+                            <div><p class="text-slate-400 text-[10px] font-bold uppercase">Durum</p><p class="font-bold text-green-500">Kayıtlı</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-announcements" class="page hidden animate-in fade-in">
+                    <h2 class="text-3xl font-black mb-8 border-l-4 border-blue-500 pl-4 uppercase">Duyuru Merkezi</h2>
+                    <div id="ann-list" class="max-w-4xl space-y-4"></div>
+                </div>
+
+                <div id="page-dashboard" class="page hidden animate-in fade-in">
+                    <h2 class="text-3xl font-black mb-8 border-l-4 border-blue-600 pl-4 uppercase">Ders Not Durumu</h2>
+                    <div class="bg-white dark:bg-slate-900 shadow-sm border dark:border-slate-800 rounded-2xl overflow-hidden text-[13px]">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-100 dark:bg-slate-800 font-bold border-b dark:border-slate-700 text-slate-500">
+                                <tr><th class="p-4">Ders Adı</th><th class="p-4 text-center">Vize</th><th class="p-4 text-center">Final</th><th class="p-4 text-center">Büt</th><th class="p-4 text-center">Sonuç</th><th class="p-4 text-center">İşlem</th></tr>
+                            </thead>
+                            <tbody id="grade-body" class="divide-y dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="page-attendance" class="page hidden animate-in fade-in">
+                    <h2 class="text-3xl font-black mb-8 border-l-4 border-red-600 pl-4 uppercase">Devamsızlık Takibi</h2>
+                    <div id="att-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+                </div>
+
+                <div id="page-calendar" class="page hidden animate-in fade-in">
+                    <h2 class="text-3xl font-black mb-8 border-l-4 border-amber-500 pl-4 uppercase uppercase">Akademik Takvim</h2>
+                    <div class="bg-white dark:bg-slate-900 shadow-sm border dark:border-slate-800 rounded-2xl overflow-hidden text-[12px]">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-100 dark:bg-slate-800 font-bold border-b dark:border-slate-700 text-slate-500">
+                                <tr><th class="p-4">İşlem</th><th class="p-4 text-center">Başlangıç</th><th class="p-4 text-center">Bitiş</th></tr>
+                            </thead>
+                            <tbody id="cal-body" class="divide-y dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="page-transcript" class="page hidden animate-in fade-in">
+                    <h2 class="text-3xl font-black mb-8 border-l-4 border-emerald-600 pl-4 uppercase">Akademik Transkript</h2>
+                    <div id="trans-content" class="bg-white dark:bg-slate-900 p-8 rounded-3xl border-2 border-slate-200 dark:border-slate-800 shadow-xl max-w-3xl mx-auto"></div>
+                </div>
+
+                <div id="page-clubs" class="page hidden animate-in fade-in">
+                    <div class="mb-10"><h2 class="text-2xl font-black mb-6 text-emerald-600">⭐ Üyeliklerim</h2><div id="my-clubs" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div></div>
+                    <div><h2 class="text-2xl font-black mb-6 uppercase">🔍 Yeni Kulüpler</h2><div id="other-clubs" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div></div>
+                </div>
+            </div>
+
+            <div id="teacher-pages" class="hidden">
+                <div id="page-teacherGrades" class="page hidden animate-in fade-in">
+                    <h2 class="text-3xl font-black mb-8 border-l-4 border-purple-600 pl-4 uppercase">Öğrenci Not Girişi</h2>
+                    <div class="bg-white dark:bg-slate-900 shadow-sm border dark:border-slate-800 rounded-2xl overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-100 dark:bg-slate-800 font-bold border-b dark:border-slate-700 text-slate-500 text-xs">
+                                <tr><th class="p-4">Ders / Öğrenci</th><th class="p-4">Vize</th><th class="p-4">Final</th><th class="p-4">Büt</th><th class="p-4 text-center">İşlem</th></tr>
+                            </thead>
+                            <tbody id="teacher-grade-body" class="divide-y dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="page-publishAnn" class="page hidden animate-in fade-in">
+                    <h2 class="text-3xl font-black mb-8 border-l-4 border-purple-600 pl-4 uppercase">Duyuru Yayınla</h2>
+                    <div class="max-w-2xl info-card space-y-6">
+                        <div><label class="text-[10px] font-bold text-slate-400 uppercase">Duyuru Başlığı</label><input type="text" id="new-ann-title" class="w-full mt-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none outline-none focus:ring-2 focus:ring-purple-500"></div>
+                        <div><label class="text-[10px] font-bold text-slate-400 uppercase">Duyuru İçeriği</label><textarea id="new-ann-body" rows="4" class="w-full mt-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border-none outline-none focus:ring-2 focus:ring-purple-500"></textarea></div>
+                        <button onclick="publishAnnouncement()" class="w-full bg-purple-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-purple-700 transition">Yayınla ve Öğrencilere Gönder</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // --- VERİ TABANI ---
+        let currentRole = "";
+        const dersler = [
+            { id: 1, ad: "Software Engineering", hoca: "Nihal Menzi Çetin", akts: 6, oda: "SB-01", vize: 75, final: 85, but: null, dev: 3, limit: 12, harf: "AA" },
+            { id: 2, ad: "Information Systems Hardware", hoca: "Nihal Menzi Çetin", akts: 5, oda: "Amfi-2", vize: 30, final: 40, but: 65, dev: 10, limit: 12, harf: "CB" },
+            { id: 3, ad: "Management Information System", hoca: "Cihan Çetinkaya", akts: 5, oda: "D-205", vize: 90, final: 90, but: null, dev: 10, limit: 12, harf: "AA" },
+            { id: 4, ad: "Corporate Finance", hoca: "Elif Acar", akts: 5, oda: "SB-04", vize: 30, final: 90, but: null, dev: 10, limit: 12, harf: "CB" },
+            { id: 5, ad: "System Analysis and Design", hoca: "Kadir Kurt", akts: 5, oda: "A-002", vize: 80, final: 80, but: null, dev: 10, limit: 12, harf: "BA" },
+            { id: 6, ad: "Research Methods", hoca: "Bilge Aksay", akts: 6, oda: "SB-01", vize: 80, final: 80, but: null, dev: 1, limit: 10, harf: "BA" }
+        ];
+
+        const duyurular = [
+            { id: 1, bas: "Vize Salonu", icerik: "Software sınavı C-201'dedir.", tar: "16.01.2026", hoca: "Ahmet Bilgin", tur: "exam" }
+        ];
+
+        const takvim = [{ ad: "Ders Kayıtları", bas: "15.09.2025", bit: "19.09.2025" }];
+
+        // --- GİRİŞ MANTIĞI ---
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+
+            if (p === "1234") {
+                if (u === "admin") setupPanel("STUDENT");
+                else if (u === "hoca") setupPanel("ACADEMICIAN");
+                else alert("Geçersiz kullanıcı!");
+            }
+        });
+
+        function setupPanel(role) {
+            currentRole = role;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-dashboard').classList.remove('hidden');
+            
+            const nav = document.getElementById('nav-menu');
+            const icon = document.getElementById('side-role-icon');
+            const header = document.getElementById('login-header');
+
+            nav.innerHTML = "";
+            if(role === "STUDENT") {
+                nav.innerHTML = `
+                    <button onclick="showPage('studentInfo')" id="btn-studentInfo" class="w-full text-left p-4 rounded-xl flex items-center gap-3"><span>👤</span> Genel Bilgiler</button>
+                    <button onclick="showPage('announcements')" id="btn-announcements" class="w-full text-left p-4 rounded-xl flex items-center gap-3"><span>🔔</span> Duyurular</button>
+                    <button onclick="showPage('dashboard')" id="btn-dashboard" class="w-full text-left p-4 rounded-xl flex items-center gap-3 active-link"><span>🏠</span> Not Durumu</button>
+                    <button onclick="showPage('attendance')" id="btn-attendance" class="w-full text-left p-4 rounded-xl flex items-center gap-3"><span>📊</span> Devamsızlık</button>
+                    <button onclick="showPage('calendar')" id="btn-calendar" class="w-full text-left p-4 rounded-xl flex items-center gap-3"><span>📅</span> Takvim</button>
+                    <button onclick="showPage('transcript')" id="btn-transcript" class="w-full text-left p-4 rounded-xl flex items-center gap-3"><span>📄</span> Transkript</button>
+                    <button onclick="showPage('clubs')" id="btn-clubs" class="w-full text-left p-4 rounded-xl flex items-center gap-3"><span>🤝</span> Kulüpler</button>
+                `;
+                document.getElementById('student-pages').classList.remove('hidden');
+                showPage('dashboard');
+            } else {
+                icon.innerText = "👨‍🏫";
+                icon.classList.replace('bg-blue-500', 'bg-purple-600');
+                nav.innerHTML = `
+                    <button onclick="showPage('teacherGrades')" id="btn-teacherGrades" class="w-full text-left p-4 rounded-xl flex items-center gap-3 active-link-teacher"><span>📝</span> Not Girişi</button>
+                    <button onclick="showPage('publishAnn')" id="btn-publishAnn" class="w-full text-left p-4 rounded-xl flex items-center gap-3"><span>📢</span> Duyuru Yayınla</button>
+                `;
+                document.getElementById('teacher-pages').classList.remove('hidden');
+                showPage('teacherGrades');
+            }
+        }
+
+        // --- SAYFA NAVİGASYONU ---
+        function showPage(p) {
+            document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
+            document.querySelectorAll('#nav-menu button').forEach(btn => {
+                btn.classList.remove('active-link', 'active-link-teacher');
+                btn.classList.add('text-slate-400');
+            });
+
+            document.getElementById('page-'+p).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-'+p);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add(currentRole === "STUDENT" ? 'active-link' : 'active-link-teacher');
+
+            if(p === 'dashboard') buildGrades();
+            if(p === 'attendance') buildAttendance();
+            if(p === 'announcements') buildAnnouncements();
+            if(p === 'calendar') buildCalendar();
+            if(p === 'transcript') buildTranscript();
+            if(p === 'clubs') buildClubs();
+            if(p === 'teacherGrades') buildTeacherGradeTable();
+        }
+
+        // --- ÖĞRENCİ FONKSİYONLARI (ESKİ ÖZELLİKLER) ---
+        function buildGrades() {
+            const tbody = document.getElementById('grade-body');
+            tbody.innerHTML = "";
+            dersler.forEach(d => {
+                const son = d.but !== null ? d.but : d.final;
+                let ort = "--", durum = "Bekliyor", renk = "text-slate-400";
+                if (d.vize !== null && son !== null) {
+                    ort = (d.vize * 0.4 + son * 0.6).toFixed(1);
+                    if (ort >= 50 && son >= 50) { durum = "GEÇTİ"; renk = "text-green-600"; }
+                    else { durum = d.but === null ? "BÜT GEREKLİ" : "KALDI"; renk = "text-red-500"; }
+                }
+                tbody.innerHTML += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50"><td class="p-4 font-bold border-r dark:border-slate-800">${d.ad}</td><td class="p-4 text-center border-r dark:border-slate-800">${d.vize}</td><td class="p-4 text-center border-r dark:border-slate-800">${d.final || '--'}</td><td class="p-4 text-center text-orange-600 font-bold border-r dark:border-slate-800">${d.but || '--'}</td><td class="p-4 text-center font-black ${renk} border-r dark:border-slate-800 uppercase text-[10px]">${ort} / ${durum}</td><td class="p-4 text-center"><button onclick="openModal(${d.id})" class="text-blue-500 hover:scale-125 transition">ℹ️</button></td></tr>`;
+            });
+        }
+
+        function buildAttendance() {
+            const container = document.getElementById('att-container');
+            container.innerHTML = "";
+            dersler.forEach(d => {
+                const yuzde = (d.dev / d.limit) * 100;
+                let barColor = yuzde >= 90 ? "bg-red-600" : (yuzde >= 70 ? "bg-orange-500" : "bg-blue-500");
+                container.innerHTML += `<div class="info-card"><div class="flex justify-between items-start mb-4"><div><h4 class="font-bold text-lg">${d.ad}</h4><p class="text-[10px] text-slate-400 uppercase font-bold">${d.kod}</p></div><span class="text-2xl font-black">${d.dev}/${d.limit}</span></div><div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden mb-2"><div class="${barColor} h-full transition-all duration-1000" style="width: ${yuzde}%"></div></div><p class="text-[10px] font-bold text-slate-500">Kalan Hak: ${d.limit - d.dev} Saat</p></div>`;
+            });
+        }
+
+        function buildTranscript() {
+            const el = document.getElementById('trans-content');
+            el.innerHTML = `<div class="flex justify-between border-b-2 dark:border-slate-800 pb-6 mb-6"><div><h3 class="text-xl font-black uppercase">Yiğit Ardıç</h3><p class="text-xs text-slate-400">YBS Bölümü</p></div><div class="text-right font-black"><p class="text-[10px] text-slate-400">GNO</p><h3 class="text-4xl text-emerald-600">3.09</h3></div></div>`;
+            dersler.forEach(d => { el.innerHTML += `<div class="flex justify-between items-center p-4 border-b dark:border-slate-800"><div><p class="text-sm font-bold uppercase">${d.ad}</p></div><div class="font-black text-emerald-600 text-xl">${d.harf}</div></div>`; });
+        }
+
+        function buildClubs() {
+            document.getElementById('my-clubs').innerHTML = `<div class="info-card border-l-4 border-emerald-500 font-bold"><h4>Yazılım Kulübü</h4><p class="text-[10px] text-slate-400">Yönetim</p></div>`;
+            document.getElementById('other-clubs').innerHTML = `<div class="info-card flex flex-col justify-between"><h4 class="font-bold mb-4 uppercase text-sm text-blue-500">E-Spor</h4><button class="w-full py-2 bg-slate-100 dark:bg-slate-800 rounded-xl font-bold">Katıl</button></div>`;
+        }
+
+        function buildCalendar() {
+            const tb = document.getElementById('cal-body');
+            tb.innerHTML = "";
+            takvim.forEach(t => { tb.innerHTML += `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50"><td class="p-4 border-r dark:border-slate-700">${t.ad}</td><td class="p-4 text-center border-r dark:border-slate-700">${t.bas}</td><td class="p-4 text-center">${t.bit}</td></tr>`; });
+        }
+
+        function buildAnnouncements() {
+            const list = document.getElementById('ann-list');
+            list.innerHTML = "";
+            duyurular.forEach(d => { list.innerHTML += `<div class="announcement-card border-blue-500"><h4 class="font-black text-lg">${d.bas}</h4><p class="text-sm text-slate-500 mt-1">${d.icerik}</p><p class="text-[10px] mt-3 italic font-bold">${d.hoca} - ${d.tar}</p></div>`; });
+        }
+
+        // --- AKADEMİSYEN FONKSİYONLARI ---
+        function buildTeacherGradeTable() {
+            const tb = document.getElementById('teacher-grade-body');
+            tb.innerHTML = "";
+            dersler.forEach((d, i) => {
+                tb.innerHTML += `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td class="p-4 font-bold border-r dark:border-slate-700">${d.ad}<br><small class="text-slate-400 font-normal">Öğrenci: Yiğit Ardıç</small></td>
+                        <td class="p-4 border-r dark:border-slate-700"><input type="number" id="t-vize-${i}" value="${d.vize}" class="w-16 p-1 rounded bg-slate-100 dark:bg-slate-800 border-none outline-none focus:ring-2 focus:ring-purple-500"></td>
+                        <td class="p-4 border-r dark:border-slate-700"><input type="number" id="t-final-${i}" value="${d.final || 0}" class="w-16 p-1 rounded bg-slate-100 dark:bg-slate-800 border-none outline-none focus:ring-2 focus:ring-purple-500"></td>
+                        <td class="p-4 border-r dark:border-slate-700"><input type="number" id="t-but-${i}" value="${d.but || 0}" class="w-16 p-1 rounded bg-slate-100 dark:bg-slate-800 border-none outline-none focus:ring-2 focus:ring-purple-500"></td>
+                        <td class="p-4 text-center"><button onclick="teacherSave(${i})" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md active:scale-95">Kaydet</button></td>
+                    </tr>`;
+            });
+        }
+
+        function teacherSave(idx) {
+            dersler[idx].vize = parseInt(document.getElementById(`t-vize-${idx}`).value);
+            dersler[idx].final = parseInt(document.getElementById(`t-final-${idx}`).value);
+            dersler[idx].but = parseInt(document.getElementById(`t-but-${idx}`).value) || null;
+            alert("Öğrenci notu başarıyla güncellendi!");
+        }
+
+        function publishAnnouncement() {
+            const t = document.getElementById('new-ann-title').value;
+            const b = document.getElementById('new-ann-body').value;
+            if(t && b) {
+                duyurular.unshift({ id: Date.now(), bas: t, icerik: b, tar: "Bugün", hoca: "Akademisyen", tur: "info" });
+                alert("Duyuru yayınlandı! Tüm öğrenciler görebilir.");
+                document.getElementById('new-ann-title').value = "";
+                document.getElementById('new-ann-body').value = "";
+            }
+        }
+
+        // --- YARDIMCI ARAÇLAR ---
+        function openModal(id) {
+            const d = dersler.find(x => x.id === id);
+            document.getElementById('m-title').innerText = d.ad;
+            document.getElementById('m-teacher').innerText = d.hoca;
+            document.getElementById('m-akts').innerText = d.akts;
+            document.getElementById('m-room').innerText = d.oda;
+            document.getElementById('info-modal').classList.remove('hidden');
+        }
+        function closeModal() { document.getElementById('info-modal').classList.add('hidden'); }
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            document.getElementById('theme-icon').innerText = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+        }
+    </script>
+</body>
+</html>
